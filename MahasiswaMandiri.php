@@ -1,11 +1,9 @@
 <?php
-require_once 'Mahasiswa.php';
-require_once 'koneksi.php';
+require_once __DIR__ . '/Mahasiswa.php';
+require_once __DIR__ . '/Database.php';
 
 class MahasiswaMandiri extends Mahasiswa {
-    // Properti tambahan khusus mahasiswa mandiri
-    private string $golongan_ukt;
-    private string $nama_wali;
+// ... sisa kode di bawahnya biarkan sama ...
 
     // Constructor untuk memetakan nilai dari database
     public function __construct($id, $nama, $nim, $smt, $ukt, $golongan, $wali) {
@@ -30,6 +28,43 @@ class MahasiswaMandiri extends Mahasiswa {
     }
 
     // Method SELECT WHERE: Mencari mahasiswa mandiri berdasarkan GOLONGAN UKT
+    public static function getByGolonganUkt($golongan) {
+        $db = new Database();
+        $sql = "SELECT * FROM tabel_mahasiswa WHERE jenis_pembiayaan = 'mandiri' AND golongan_ukt = :golongan";
+        $stmt = $db->koneksi->prepare($sql);
+        $stmt->execute(['golongan' => $golongan]);
+        return $stmt->fetchAll();
+    }
+}
+?>
+<?php
+require_once __DIR__ . '/Mahasiswa.php';
+require_once __DIR__ . '/Database.php';
+
+class MahasiswaMandiri extends Mahasiswa {
+    private string $golongan_ukt;
+    private string $nama_wali;
+
+    public function __construct($id, $nama, $nim, $smt, $ukt, $golongan, $wali) {
+        parent::__construct($id, $nama, $nim, $smt, $ukt);
+        $this->golongan_ukt = $golongan;
+        $this->nama_wali = $wali;
+    }
+
+    // TAHAP 5: Rumus Mandiri -> Tarif UKT + 100.000
+    public function hitungTagihanSemester(): float {
+        return $this->tarif_ukt_nominal + 100000;
+    }
+
+    public function tampilkanSpesifikasiAkademik(): void {
+        echo "=== MAHASISWA JALUR MANDIRI ===\n";
+        echo "Nama      : " . $this->nama_mahasiswa . "\n";
+        echo "NIM       : " . $this->nim . "\n";
+        echo "Golongan  : " . $this->golongan_ukt . "\n";
+        echo "Nama Wali : " . $this->nama_wali . "\n";
+        echo "Tagihan   : Rp " . number_format($this->hitungTagihanSemester(), 0, ',', '.') . "\n\n";
+    }
+
     public static function getByGolonganUkt($golongan) {
         $db = new Database();
         $sql = "SELECT * FROM tabel_mahasiswa WHERE jenis_pembiayaan = 'mandiri' AND golongan_ukt = :golongan";
